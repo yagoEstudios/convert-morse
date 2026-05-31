@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <rect width="120" height="120" rx="16" fill="#0d0d0d"/>
+  <g fill="#fbbf24">
+    <circle cx="22" cy="40" r="8"/>
+    <rect x="36" y="32" width="32" height="16" rx="6"/>
+  </g>
+  <g fill="#a855f7">
+    <rect x="22" y="72" width="32" height="16" rx="6"/>
+    <circle cx="68" cy="80" r="8"/>
+    <circle cx="88" cy="80" r="8"/>
+  </g>
+  <text x="60" y="112" text-anchor="middle" font-family="ui-monospace, Consolas, monospace"
+        font-size="10" font-weight="bold" fill="#ffffff">MORSE</text>
+</svg>
