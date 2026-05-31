@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conversor Morse</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --panel: #1a1a1a;
+    --yellow: #fbbf24;
+    --purple: #a855f7;
+    --purple-hover: #c084fc;
+    --light: #ffffff;
+    --placeholder: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+  }
+  h1 { margin: 0 0 24px; font-size: 28px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+  }
+  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .panel {
+    border: 1px solid var(--purple);
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--yellow);
+    font-weight: bold;
+  }
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    resize: vertical;
+    border: 1px solid var(--purple);
+    background: var(--bg);
+    color: var(--light);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 14px;
+  }
+  textarea:focus { outline: none; border-color: var(--yellow); }
+  textarea::placeholder { color: var(--placeholder); }
+  button {
+    background: var(--yellow);
+    color: var(--bg);
+    border: 0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  button:hover { background: var(--purple-hover); color: var(--light); }
+  h1 span { color: var(--yellow); }
+  h1 .arrow { color: var(--purple); }
+  .copy-feedback { font-size: 12px; color: var(--yellow); opacity: 0; transition: opacity 0.2s; }
+  .copy-feedback.show { opacity: 1; }
+  footer { margin-top: 24px; font-size: 12px; color: var(--placeholder); }
+</style>
+</head>
+<body>
+  <h1><span>Conversor Texto</span> <span class="arrow">↔</span> <span>Morse</span></h1>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-header">
+        <span>Texto</span>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span id="feedback-text" class="copy-feedback">copiado</span>
+          <button data-copy="texto">Copiar</button>
+        </div>
+      </div>
+      <textarea id="texto" placeholder="Escribe aqui texto normal..."></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span>Morse</span>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span id="feedback-morse" class="copy-feedback">copiado</span>
+          <button data-copy="morse">Copiar</button>
+        </div>
+      </div>
+      <textarea id="morse" placeholder="... .- .-.. ..- -.."></textarea>
+    </div>
+  </div>
+
+  <footer>Punto: <code>.</code> &nbsp;·&nbsp; Raya: <code>-</code> &nbsp;·&nbsp; Letras separadas por espacio &nbsp;·&nbsp; Palabras por <code>/</code></footer>
+
+<script>
+const MORSE = {
+  'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....',
+  'I':'..','J':'.---','K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.',
+  'Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-',
+  'Y':'-.--','Z':'--..',
+  '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....',
+  '6':'-....','7':'--...','8':'---..','9':'----.',
+  '.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.',
+  '(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-',
+  '+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.',
+  'Ñ':'--.--'
+};
+const INV = Object.fromEntries(Object.entries(MORSE).map(([k,v]) => [v,k]));
+
+function quitarAcentos(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ñ/gi, 'Ñ');
+}
+
+function textoAMorse(t) {
+  const norm = quitarAcentos(t).toUpperCase();
+  return norm.split(/\n/).map(linea =>
+    linea.split(/\s+/).filter(Boolean).map(palabra =>
+      [...palabra].map(c => MORSE[c] || '').filter(Boolean).join(' ')
+    ).join(' / ')
+  ).join('\n');
+}
+
+function morseATexto(m) {
+  return m.split(/\n/).map(linea =>
+    linea.trim().split(/\s*\/\s*/).map(palabra =>
+      palabra.trim().split(/\s+/).map(s => INV[s] || '').join('')
+    ).join(' ')
+  ).join('\n');
+}
+
+const elTexto = document.getElementById('texto');
+const elMorse = document.getElementById('morse');
+let bloqueado = false;
+
+elTexto.addEventListener('input', () => {
+  if (bloqueado) return;
+  bloqueado = true;
+  elMorse.value = textoAMorse(elTexto.value);
+  bloqueado = false;
+});
+
+elMorse.addEventListener('input', () => {
+  if (bloqueado) return;
+  bloqueado = true;
+  elTexto.value = morseATexto(elMorse.value);
+  bloqueado = false;
+});
+
+document.querySelectorAll('button[data-copy]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.copy;
+    const el = document.getElementById(id);
+    try {
+      await navigator.clipboard.writeText(el.value);
+    } catch {
+      el.select();
+      document.execCommand('copy');
+    }
+    const fb = document.getElementById('feedback-' + id);
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 1200);
+  });
+});
+</script>
+</body>
+</html>
