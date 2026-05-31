@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Conversor Morse</title>
 <style>
   :root {
@@ -33,7 +34,12 @@
     width: 100%;
     max-width: 1000px;
   }
-  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; gap: 12px; }
+    body { padding: 16px 12px; }
+    h1 { font-size: 22px; margin-bottom: 16px; }
+    textarea { min-height: 130px; }
+  }
   .panel {
     background: var(--panel);
     border-radius: 10px;
@@ -85,7 +91,7 @@
 </style>
 </head>
 <body>
-  <h1><span>Conversor Texto</span> <span class="arrow">↔</span> <span>Morse</span></h1>
+  <h1><span>Conversor Texto</span> <span class="arrow">Ôåö</span> <span>Morse</span></h1>
 
   <div class="grid">
     <div class="panel">
@@ -111,7 +117,7 @@
     </div>
   </div>
 
-  <footer>Punto: <code>.</code> &nbsp;·&nbsp; Raya: <code>-</code> &nbsp;·&nbsp; Letras separadas por espacio &nbsp;·&nbsp; Palabras por <code>/</code></footer>
+  <footer>Punto: <code>.</code> &nbsp;┬À&nbsp; Raya: <code>-</code> &nbsp;┬À&nbsp; Letras separadas por espacio &nbsp;┬À&nbsp; Palabras por <code>/</code></footer>
 
 <script>
 const MORSE = {
@@ -124,12 +130,12 @@ const MORSE = {
   '.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.',
   '(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-',
   '+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.',
-  'Ñ':'--.--'
+  '├æ':'--.--'
 };
 const INV = Object.fromEntries(Object.entries(MORSE).map(([k,v]) => [v,k]));
 
 function quitarAcentos(s) {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ñ/gi, 'Ñ');
+  return s.normalize('NFD').replace(/[╠Ç-═»]/g, '').replace(/n╠â/gi, '├æ');
 }
 
 function textoAMorse(t) {
