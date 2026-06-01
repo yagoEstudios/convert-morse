@@ -110,6 +110,9 @@
       <div class="panel-header">
         <span>Morse</span>
         <div style="display:flex; gap:8px; align-items:center;">
+          <label style="display:flex; gap:4px; align-items:center; font-size:0.85em; cursor:pointer;">
+            <input type="checkbox" id="emoji-toggle"> 😮😑
+          </label>
           <span id="feedback-morse" class="copy-feedback">copiado</span>
           <button data-copy="morse">Copiar</button>
         </div>
@@ -160,20 +163,30 @@ function morseATexto(m) {
 
 const elTexto = document.getElementById('texto');
 const elMorse = document.getElementById('morse');
+const elEmoji = document.getElementById('emoji-toggle');
 let bloqueado = false;
+
+const DOT = '😮', DASH = '😑';
+function aEmoji(s) { return s.replaceAll('.', DOT).replaceAll('-', DASH); }
+function deEmoji(s) { return s.replaceAll(DOT, '.').replaceAll(DASH, '-'); }
 
 elTexto.addEventListener('input', () => {
   if (bloqueado) return;
   bloqueado = true;
-  elMorse.value = textoAMorse(elTexto.value);
+  const morse = textoAMorse(elTexto.value);
+  elMorse.value = elEmoji.checked ? aEmoji(morse) : morse;
   bloqueado = false;
 });
 
 elMorse.addEventListener('input', () => {
   if (bloqueado) return;
   bloqueado = true;
-  elTexto.value = morseATexto(elMorse.value);
+  elTexto.value = morseATexto(deEmoji(elMorse.value));
   bloqueado = false;
+});
+
+elEmoji.addEventListener('change', () => {
+  elMorse.value = elEmoji.checked ? aEmoji(deEmoji(elMorse.value)) : deEmoji(elMorse.value);
 });
 
 document.querySelectorAll('button[data-copy]').forEach(btn => {
