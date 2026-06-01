@@ -113,6 +113,11 @@
           <label style="display:flex; gap:4px; align-items:center; font-size:0.85em; cursor:pointer;">
             <input type="checkbox" id="emoji-toggle"> 😮😑
           </label>
+          <label style="display:flex; gap:4px; align-items:center; font-size:0.85em; cursor:pointer;">
+            <input type="checkbox" id="custom-toggle">
+            <input type="text" id="dot-char" maxlength="2" value="🔵" style="width:2.2em; text-align:center;">
+            <input type="text" id="dash-char" maxlength="2" value="🔴" style="width:2.2em; text-align:center;">
+          </label>
           <span id="feedback-morse" class="copy-feedback">copiado</span>
           <button data-copy="morse">Copiar</button>
         </div>
@@ -164,30 +169,52 @@ function morseATexto(m) {
 const elTexto = document.getElementById('texto');
 const elMorse = document.getElementById('morse');
 const elEmoji = document.getElementById('emoji-toggle');
+const elCustom = document.getElementById('custom-toggle');
+const elDotChar = document.getElementById('dot-char');
+const elDashChar = document.getElementById('dash-char');
 let bloqueado = false;
 
-const DOT = '😮', DASH = '😑';
-function aEmoji(s) { return s.replaceAll('.', DOT).replaceAll('-', DASH); }
-function deEmoji(s) { return s.replaceAll(DOT, '.').replaceAll(DASH, '-'); }
+let curDot = '.', curDash = '-';
+function render(s) { return s.replaceAll('.', curDot).replaceAll('-', curDash); }
+function toPlain(s) { return s.replaceAll(curDot, '.').replaceAll(curDash, '-'); }
+
+function applyMode() {
+  const plain = toPlain(elMorse.value);
+  if (elCustom.checked) {
+    curDot = elDotChar.value || '.';
+    curDash = elDashChar.value || '-';
+  } else if (elEmoji.checked) {
+    curDot = '😮'; curDash = '😑';
+  } else {
+    curDot = '.'; curDash = '-';
+  }
+  elMorse.value = render(plain);
+}
 
 elTexto.addEventListener('input', () => {
   if (bloqueado) return;
   bloqueado = true;
-  const morse = textoAMorse(elTexto.value);
-  elMorse.value = elEmoji.checked ? aEmoji(morse) : morse;
+  elMorse.value = render(textoAMorse(elTexto.value));
   bloqueado = false;
 });
 
 elMorse.addEventListener('input', () => {
   if (bloqueado) return;
   bloqueado = true;
-  elTexto.value = morseATexto(deEmoji(elMorse.value));
+  elTexto.value = morseATexto(toPlain(elMorse.value));
   bloqueado = false;
 });
 
 elEmoji.addEventListener('change', () => {
-  elMorse.value = elEmoji.checked ? aEmoji(deEmoji(elMorse.value)) : deEmoji(elMorse.value);
+  if (elEmoji.checked) elCustom.checked = false;
+  applyMode();
 });
+elCustom.addEventListener('change', () => {
+  if (elCustom.checked) elEmoji.checked = false;
+  applyMode();
+});
+elDotChar.addEventListener('input', () => { if (elCustom.checked) applyMode(); });
+elDashChar.addEventListener('input', () => { if (elCustom.checked) applyMode(); });
 
 document.querySelectorAll('button[data-copy]').forEach(btn => {
   btn.addEventListener('click', async () => {
